@@ -3,7 +3,7 @@ const User = require('../models/User');
 // Get all users (admin only)
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -14,13 +14,19 @@ exports.getAllUsers = async (req, res) => {
 exports.updateBalance = async (req, res) => {
   try {
     const { id } = req.params;
-    const { balance } = req.body;
+    const { btc, eth, usdt } = req.body;
 
-    if (typeof balance !== 'number' || balance < 0) {
-      return res.status(400).json({ message: 'Invalid balance' });
-    }
+    // Calculate total balance
+    const btcValue = parseFloat(btc) * 50000; // Approximate BTC price
+    const ethValue = parseFloat(eth) * 3000;  // Approximate ETH price
+    const usdtValue = parseFloat(usdt);
+    const totalBalance = btcValue + ethValue + usdtValue;
 
-    const user = await User.findByIdAndUpdate(id, { balance }, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(id, {
+      balance: { btc: parseFloat(btc), eth: parseFloat(eth), usdt: parseFloat(usdt) },
+      totalBalance: totalBalance
+    }, { new: true });
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
   balance: {
+    btc: { type: Number, default: 0 },
+    eth: { type: Number, default: 0 },
+    usdt: { type: Number, default: 0 }
+  },
+  totalBalance: {
+    type: Number,
+    default: 0
+  },
+  profit: {
     type: Number,
     default: 0
   },

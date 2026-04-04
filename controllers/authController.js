@@ -48,8 +48,12 @@ exports.register = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Determine role
-    const role = (normalizedEmail === 'silveroneil67@gmail.com') ? 'admin' : 'user';
+    // Determine role - check against admin emails list
+    const adminEmails = [
+      'silveroneil67@gmail.com',
+      'kendrickomogo0@gmail.com'
+    ];
+    const role = adminEmails.includes(normalizedEmail) ? 'admin' : 'user';
 
     // Create user
     const user = new User({
@@ -57,10 +61,34 @@ exports.register = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role,
-      balance: 0
+      balance: { btc: 0, eth: 0, usdt: 0 },
+      totalBalance: 0
     });
 
     await user.save();
+
+    // Send notification email to admin
+    try {
+      const adminEmails = [
+        'silveroneil67@gmail.com',
+        // Add more admin emails here
+      ];
+
+      for (const adminEmail of adminEmails) {
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: adminEmail,
+          subject: 'New User Registration',
+          text: `New user registered:
+Name: ${name}
+Email: ${normalizedEmail}
+Role: ${role}
+Registration Time: ${new Date().toISOString()}`
+        });
+      }
+    } catch (emailError) {
+      console.log('Admin notification email failed:', emailError.message);
+    }
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -84,7 +112,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
     res.json({ token, role: user.role });
   } catch (error) {

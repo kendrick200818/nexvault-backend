@@ -43,7 +43,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 
 // Connect to MongoDB
-const mongoURI = 'mongodb+srv://chidimmachukwuma310_db_user:oJ8LgnE5xxdCTXGd@cluster0.3trlp2w.mongodb.net/crypto-dashboard?retryWrites=true&w=majority';
+const mongoURI = process.env.MONGO_URI || 'mongodb+srv://chidimmachukwuma310_db_user:oJ8LgnE5xxdCTXGd@cluster0.3trlp2w.mongodb.net/crypto-dashboard?retryWrites=true&w=majority';
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
@@ -52,8 +52,13 @@ mongoose.connect(mongoURI, {
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// For Vercel deployment
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+} else {
+  // Start server
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}

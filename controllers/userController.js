@@ -44,7 +44,7 @@ exports.deposit = async (req, res) => {
     // Update user balance
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { $inc: { balance: amount } },
+      { $inc: { totalBalance: amount } },
       { new: true }
     ).select('-password');
 
@@ -64,13 +64,13 @@ exports.deposit = async (req, res) => {
         from: process.env.EMAIL_USER,
         to: adminEmail,
         subject: 'New Deposit Notification',
-        text: `New deposit received:\n\nUser: ${user.name} (${user.email})\nAmount: $${amount}\nMethod: ${method.toUpperCase()}\nTransaction ID: ${transactionId || 'N/A'}\nNew Balance: $${user.balance}`
+        text: `New deposit received:\n\nUser: ${user.name} (${user.email})\nAmount: $${amount}\nMethod: ${method.toUpperCase()}\nTransaction ID: ${transactionId || 'N/A'}\nNew Balance: $${user.totalBalance}`
       });
     }
 
     res.json({
       message: 'Deposit processed successfully',
-      newBalance: user.balance,
+      newBalance: user.totalBalance,
       amount: amount
     });
   } catch (error) {
@@ -101,7 +101,7 @@ exports.withdrawBank = async (req, res) => {
     }
 
     // Check balance
-    if (user.balance < amount) {
+    if (user.totalBalance < amount) {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
@@ -129,7 +129,7 @@ exports.withdrawBank = async (req, res) => {
     console.log('Bank withdrawal request:', withdrawalRequest);
 
     // Deduct from user balance
-    user.balance -= amount;
+    user.totalBalance -= amount;
     await user.save();
 
     // Send notification to admin (you would implement this)
