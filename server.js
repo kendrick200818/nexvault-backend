@@ -43,7 +43,12 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
 
 // Connect to MongoDB
-const mongoURI = process.env.MONGO_URI || 'mongodb+srv://chidimmachukwuma310_db_user:oJ8LgnE5xxdCTXGd@cluster0.3trlp2w.mongodb.net/crypto-dashboard?retryWrites=true&w=majority';
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+  console.error('❌ MONGO_URI environment variable is not set');
+  process.exit(1);
+}
+console.log('📝 Connecting to MongoDB with URI:', mongoURI.substring(0, 50) + '...');
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
