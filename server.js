@@ -57,13 +57,13 @@ mongoose.connect(mongoURI, {
 .then(() => console.log('✅ MongoDB Connected'))
 .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
-
-// For Vercel deployment (if needed)
+// For Vercel deployment
 if (process.env.NODE_ENV === 'production') {
   module.exports = app;
+} else {
+  // Start server
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 }
